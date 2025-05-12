@@ -200,7 +200,7 @@ class _HabitHomePageState extends State<HabitHomePage> {
                 child: Row(
                   children: [
                     Image.asset(
-                      'assets/images/logo.png',
+                      'assets/images/graph_icon.png',
                       width: 70,
                       height: 70,
                     ),
