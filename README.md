@@ -2,6 +2,8 @@
 
 A Flutter application designed to help users track and build positive habits. Features include habit creation, progress tracking, reminders, achievements, and data visualization through charts. The app utilizes Firebase for authentication and local notifications for reminders.
 
+![Application Screenshots](assets/images/screenshots.png)
+
 ## Features
 
 *   User Authentication (Login, Signup, Password Reset via Firebase)
