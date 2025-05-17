@@ -78,7 +78,7 @@ The project is set up for Android, but here are quick checks if you see build er
 *   `auth.dart`: Handles authentication state and navigates to login or home.
 *   `models/`: Contains data model classes (`Habit`, `Category`, `Achievement`, `Reminder`).
 *   `screens/`: Contains UI screens for different parts of the app (login, signup, home page, settings, reminders).
-*   `services/`: Contains service classes for notifications, achievements, and categories.
+*   `services/`: Contains service classes for notifications, achievements, and categories
 *   `widgets/`: (If created) Would contain reusable custom widgets
 *   `charts.dart`: Defines the page for displaying habit progress charts
 
