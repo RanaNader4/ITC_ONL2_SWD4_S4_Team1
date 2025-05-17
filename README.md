@@ -87,4 +87,4 @@ The project is set up for Android, but here are quick checks if you see build er
 *   **Firebase:** This application relies on Firebase for authentication. Ensure your Firebase project is set up and the necessary configuration files (`google-services.json` for Android, `GoogleService-Info.plist` for iOS) are correctly placed in your project. These files are typically added to `.gitignore` and should not be committed to the repository.
 *   **Local Notifications:** The app uses `flutter_local_notifications` for reminders. Permissions for notifications and exact alarms are requested at runtime.
 *   **Shared Preferences:** Used for storing habits, completed habits, achievements, categories, and theme preferences locally on the device.
-*   **Fonts:** Uses `google_fonts` for the Lato font family and includes custom fonts ('DancingScript', 'Lora') as assets.
+*   **Fonts:** Uses `google_fonts` for the Lato font family and includes custom fonts ('DancingScript', 'Lora') as assets
