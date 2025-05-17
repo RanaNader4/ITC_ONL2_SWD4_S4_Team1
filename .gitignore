@@ -44,12 +44,6 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-# User-requested ignores
-README.md
-
-# Firebase/Google Services configuration files
+# Firebase service files
 **/google-services.json
 **/GoogleService-Info.plist
-
-# Android local properties
-**/local.properties

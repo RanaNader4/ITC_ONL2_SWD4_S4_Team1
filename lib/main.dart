@@ -23,23 +23,9 @@ import 'package:habit2/screens/reminders/reminders_page.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-// Global ValueNotifier for ThemeMode
-final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.system);
-
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  
-  // Load saved theme preference
-  final prefs = await SharedPreferences.getInstance();
-  final themeModeString = prefs.getString('themeMode');
-  if (themeModeString == 'light') {
-    themeNotifier.value = ThemeMode.light;
-  } else if (themeModeString == 'dark') {
-    themeNotifier.value = ThemeMode.dark;
-  } else {
-    themeNotifier.value = ThemeMode.system;
-  }
   
   try {
     final notificationService = NotificationService();
@@ -79,115 +65,18 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Define a light theme
-    final ThemeData lightTheme = ThemeData(
-      brightness: Brightness.light,
-      primarySwatch: Colors.deepPurple,
-      scaffoldBackgroundColor: Colors.grey[100],
-      appBarTheme: AppBarTheme(
-        backgroundColor: Colors.grey[50],
-        elevation: 0,
-        iconTheme: IconThemeData(color: Colors.grey[800]),
-        titleTextStyle: GoogleFonts.lato(
-            color: Colors.grey[800],
-            fontWeight: FontWeight.bold,
-            fontSize: 20),
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: Auth(),
+      theme: ThemeData(
+        textTheme: GoogleFonts.latoTextTheme(Theme.of(context).textTheme),
       ),
-      textTheme: GoogleFonts.latoTextTheme(ThemeData.light().textTheme),
-      colorScheme: ColorScheme.fromSwatch(
-        primarySwatch: Colors.deepPurple,
-        brightness: Brightness.light,
-        backgroundColor: Colors.grey[100]!,
-      ).copyWith(
-          secondary: Colors.amber,
-          surfaceVariant: Colors.grey[300],
-          outline: Colors.grey[400]),
-      cardTheme: CardTheme(
-        elevation: 2,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
-        margin: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 8.0),
-      ),
-      floatingActionButtonTheme: FloatingActionButtonThemeData(
-        backgroundColor: Colors.deepPurple,
-        foregroundColor: Colors.white70,
-      ),
-      tabBarTheme: TabBarTheme(
-        labelColor: Colors.deepPurple,
-        unselectedLabelColor: Colors.grey[600],
-        indicatorColor: Colors.deepPurple,
-      ),
-      dialogTheme: DialogTheme(
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
-          titleTextStyle: GoogleFonts.lato(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87),
-          contentTextStyle: GoogleFonts.lato(fontSize: 16, color: Colors.black87))
-    );
-
-    // Define a dark theme
-    final ThemeData darkTheme = ThemeData(
-      brightness: Brightness.dark,
-      primarySwatch: Colors.deepPurple,
-      scaffoldBackgroundColor: const Color(0xFF121212),
-      appBarTheme: AppBarTheme(
-        backgroundColor: const Color(0xFF1F1F1F),
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white70),
-        titleTextStyle: GoogleFonts.lato(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 20),
-      ),
-      textTheme: GoogleFonts.latoTextTheme(ThemeData.dark()
-          .textTheme
-          .apply(bodyColor: Colors.white70, displayColor: Colors.white)),
-      colorScheme: ColorScheme.fromSwatch(
-        primarySwatch: Colors.deepPurple,
-        brightness: Brightness.dark,
-        backgroundColor: const Color(0xFF121212),
-      ).copyWith(
-          secondary: Colors.amberAccent,
-          surfaceVariant: const Color(0xFF303030),
-          outline: Colors.grey[700]),
-      cardTheme: CardTheme(
-        elevation: 2,
-        color: const Color(0xFF1E1E1E),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
-        margin: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 8.0),
-      ),
-      floatingActionButtonTheme: FloatingActionButtonThemeData(
-        backgroundColor: Colors.deepPurpleAccent,
-        foregroundColor: Colors.white,
-      ),
-      tabBarTheme: TabBarTheme(
-        labelColor: Colors.deepPurpleAccent[100],
-        unselectedLabelColor: Colors.grey[400],
-        indicatorColor: Colors.deepPurpleAccent[100],
-      ),
-      dialogTheme: DialogTheme(
-        backgroundColor: const Color(0xFF1E1E1E),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
-        titleTextStyle: GoogleFonts.lato(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
-        contentTextStyle: GoogleFonts.lato(fontSize: 16, color: Colors.white70)
-      ),
-    );
-
-    return ValueListenableBuilder<ThemeMode>(
-      valueListenable: themeNotifier,
-      builder: (context, currentMode, child) {
-        return MaterialApp(
-          debugShowCheckedModeBanner: false,
-          theme: lightTheme,
-          darkTheme: darkTheme,
-          themeMode: currentMode,
-          home: Auth(),
-          routes: {
-            'toLoginScreen' : (context) => LoginScreen(),
-            'toSignupScreen' : (context) => SignupScreen(),
-            'toForgetPassword' : (context) => ForgetPassword(),
-            'toHomeScreen' : (context) => HomeScreen(),
-            'toAuth' : (context) => Auth()
-          },
-        );
+      routes: {
+        'toLoginScreen' : (context) => LoginScreen(),
+        'toSignupScreen' : (context) => SignupScreen(),
+        'toForgetPassword' : (context) => ForgetPassword(),
+        'toHomeScreen' : (context) => HomeScreen(),
+        'toAuth' : (context) => Auth()
       },
     );
   }
@@ -628,20 +517,6 @@ class _HabitHomePageState extends State<HabitHomePage> with TickerProviderStateM
     }
   }
 
-  Future<void> _setThemeMode(ThemeMode mode) async {
-    themeNotifier.value = mode;
-    final prefs = await SharedPreferences.getInstance();
-    String modeString;
-    if (mode == ThemeMode.light) {
-      modeString = 'light';
-    } else if (mode == ThemeMode.dark) {
-      modeString = 'dark';
-    } else {
-      modeString = 'system';
-    }
-    await prefs.setString('themeMode', modeString);
-  }
-
   @override
   Widget build(BuildContext context) {
     List<Map<String, dynamic>> activeRemindersDisplayList = [];
@@ -660,20 +535,23 @@ class _HabitHomePageState extends State<HabitHomePage> with TickerProviderStateM
       activeRemindersDisplayList.sort((a, b) => a['reminderTime'].compareTo(b['reminderTime']));
     }
 
-    final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
-
     return Scaffold(
+      backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: Text('Habit Tracker',
-            ),
+        backgroundColor: Colors.grey[50],
+        elevation: 0,
+        iconTheme: IconThemeData(color: Colors.grey[800]),
+        title: Text(
+          'Habit Tracker', 
+          style: TextStyle(color: Colors.grey[800], fontWeight: FontWeight.bold)
+        ),
         actions: [
           IconButton(
-            icon: Icon(Icons.bar_chart, color: isDarkMode ? Colors.white70 : Colors.grey[800]),
+            icon: Icon(Icons.bar_chart, color: Colors.grey[800]),
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (context) =>
-                      ChartsPage(completedHabits: completedHabits),
+                  builder: (context) => ChartsPage(completedHabits: completedHabits),
                   settings: RouteSettings(arguments: habits),
                 ),
               );
@@ -683,6 +561,9 @@ class _HabitHomePageState extends State<HabitHomePage> with TickerProviderStateM
         ],
         bottom: TabBar(
           controller: _tabController,
+          labelColor: Colors.deepPurple,
+          unselectedLabelColor: Colors.grey[600],
+          indicatorColor: Colors.deepPurple,
           tabs: const [
             Tab(text: 'Today'),
             Tab(text: 'All Habits'),
@@ -695,92 +576,67 @@ class _HabitHomePageState extends State<HabitHomePage> with TickerProviderStateM
           padding: EdgeInsets.zero,
           children: <Widget>[
             DrawerHeader(
+              decoration: BoxDecoration(
+                color: Colors.grey[50],
+              ),
               child: Text(
                 'Menu',
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.brightness_6),
-              title: Text('Theme', style: Theme.of(context).textTheme.titleMedium),
-              trailing: DropdownButton<ThemeMode>(
-                value: themeNotifier.value,
-                items: const [
-                  DropdownMenuItem(
-                    value: ThemeMode.system,
-                    child: Text('System'),
-                  ),
-                  DropdownMenuItem(
-                    value: ThemeMode.light,
-                    child: Text('Light'),
-                  ),
-                  DropdownMenuItem(
-                    value: ThemeMode.dark,
-                    child: Text('Dark'),
-                  ),
-                ],
-                onChanged: (ThemeMode? newMode) {
-                  if (newMode != null) {
-                    _setThemeMode(newMode);
-                  }
-                },
-                dropdownColor: Theme.of(context).colorScheme.surfaceVariant,
+                style: TextStyle(
+                  color: Colors.grey[800],
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold
+                ),
               ),
             ),
             ListTile(
               leading: const Icon(Icons.notifications_active_outlined),
-              title: Text('Test Immediate Notification', style: Theme.of(context).textTheme.titleMedium),
+              title: const Text('Test Immediate Notification'),
               onTap: () {
                 Navigator.pop(context);
                 NotificationService().flutterLocalNotificationsPlugin.show(
-                      888,
-                      'Test Notification',
-                      'This is an immediate test notification!',
-                      const NotificationDetails(
-                        android: AndroidNotificationDetails(
-                          'test_channel',
-                          'Test Channel',
-                          channelDescription:
-                              'Channel for testing immediate notifications',
-                          importance: Importance.max,
-                          priority: Priority.high,
-                        ),
-                        iOS: DarwinNotificationDetails(
-                            presentSound: true,
-                            presentBadge: true,
-                            presentAlert: true),
-                      ),
-                    );
+                  888,
+                  'Test Notification',
+                  'This is an immediate test notification!',
+                  const NotificationDetails(
+                    android: AndroidNotificationDetails(
+                      'test_channel', 
+                      'Test Channel',
+                      channelDescription: 'Channel for testing immediate notifications',
+                      importance: Importance.max,
+                      priority: Priority.high,
+                    ),
+                    iOS: DarwinNotificationDetails(presentSound: true, presentBadge: true, presentAlert: true),
+                  ),
+                );
                 print('Attempted to show immediate test notification.');
               },
             ),
             ListTile(
               leading: const Icon(Icons.campaign_outlined),
-              title: Text('Test Motivational Notification (Multiple)', style: Theme.of(context).textTheme.titleMedium),
+              title: const Text('Test Motivational Notification'),
               onTap: () {
                 Navigator.pop(context);
                 _notificationService.scheduleMotivationNotification();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text(
-                        'Scheduled motivational notifications (various delays).'),
+                    content: Text('Scheduled a motivational notification (30s delay).'),
                     duration: Duration(seconds: 3),
                   ),
                 );
-                print(
-                    'Attempted to schedule motivational notifications (various delays).');
+                print('Attempted to schedule a motivational notification (30s delay).');
               },
             ),
             ListTile(
               leading: const Icon(Icons.logout),
-              title: Text('Logout', style: Theme.of(context).textTheme.titleMedium),
+              title: const Text('Logout'),
               onTap: () async {
-                Navigator.pop(context);
-                await FirebaseAuth.instance.signOut();
-                Navigator.of(context).pushReplacementNamed('toAuth');
-              },
-            ),
-          ],
-        ),
+                Navigator.pop(context); 
+              await FirebaseAuth.instance.signOut();
+              Navigator.of(context).pushReplacementNamed('toAuth');
+            },
+          ),
+        ],
+      ),
       ),
       body: TabBarView(
         controller: _tabController,
@@ -798,8 +654,10 @@ class _HabitHomePageState extends State<HabitHomePage> with TickerProviderStateM
             _addHabit();
           }
         },
+        backgroundColor: Colors.deepPurple,
         child: Icon(
           _currentTabIndex == 2 ? Icons.notification_add : Icons.add,
+          color: Colors.white70,
         ),
         tooltip: _currentTabIndex == 2 ? 'Add Reminder' : 'Add Habit',
       ),
@@ -807,63 +665,46 @@ class _HabitHomePageState extends State<HabitHomePage> with TickerProviderStateM
   }
 
   Widget _buildTodaysAgendaTab() {
-    if (_isLoadingGlobalReminders || _isLoadingCategories) {
+    if (_isLoadingGlobalReminders || _isLoadingCategories) { 
       return const Center(child: CircularProgressIndicator());
     }
 
-    final List<Habit> todaysHabits =
-        habits.where((h) => !h.isCompleted).toList();
+    final List<Habit> todaysHabits = habits.where((h) => !h.isCompleted).toList();
 
     if (todaysHabits.isEmpty && habits.every((h) => h.isCompleted)) {
-      return Center(
-          child: Text("All habits completed for today! 🎉",
-              style: Theme.of(context).textTheme.titleMedium));
+      return const Center(child: Text("All habits completed for today! 🎉"));
     }
     if (todaysHabits.isEmpty) {
-      return Center(
-          child: Text("No active habits for today. Add some or check 'All Habits'.",
-              style: Theme.of(context).textTheme.titleMedium));
+        return const Center(child: Text("No active habits for today. Add some or check 'All Habits'."));
     }
 
-    final categoryMap = {for (var cat in _categories) cat.id: cat};
+    final categoryMap = { for (var cat in _categories) cat.id : cat };
 
     return ListView.builder(
-      padding: const EdgeInsets.all(8.0),
-      itemCount: todaysHabits.length,
-      itemBuilder: (context, index) {
-        final habit = todaysHabits[index];
-        final HabitCategory category = categoryMap[habit.categoryId] ??
-            categoryMap['other'] ??
-            HabitCategory(
-                id: 'other',
-                name: 'Other',
-                icon: Icons.help_outline,
-                color: Colors.grey);
+        padding: const EdgeInsets.all(8.0),
+        itemCount: todaysHabits.length,
+        itemBuilder: (context, index) {
+            final habit = todaysHabits[index];
+            final HabitCategory category = categoryMap[habit.categoryId] ?? 
+                                       categoryMap['other'] ?? 
+                                       HabitCategory(id: 'other', name: 'Other', icon: Icons.help_outline, color: Colors.grey);
+            
+            final originalIndex = habits.indexWhere((h) => h.id == habit.id);
 
-        final originalIndex = habits.indexWhere((h) => h.id == habit.id);
-
-        return _HabitAgendaItem(
-          habit: habit,
-          category: category,
-          onTap: () {
-            if (originalIndex != -1) {
-              _incrementProgress(originalIndex);
-            }
-          },
-        );
-      },
+            return _HabitAgendaItem(
+              habit: habit, 
+              category: category,
+              onTap: () {
+                if (originalIndex != -1) {
+                  _incrementProgress(originalIndex);
+                }
+              },
+            );
+        },
     );
   }
 
   Widget _buildAllHabitsTab() {
-    final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final Color achievementsTitleColor = isDarkMode ? Colors.purple.shade200 : HexColor('#6c1448');
-    final Color yourHabitsTitleColor = isDarkMode ? Colors.grey.shade300 : HexColor('#4a4a4a');
-    final Color achievementLockedIconColor = isDarkMode ? Colors.white54 : Colors.grey[600]!;
-    final Color achievementLockedTextColor = isDarkMode ? Colors.white70 : Colors.grey[700]!;
-    final Color? unlockedAchievementCardColor = isDarkMode ? Colors.amber[700]?.withOpacity(0.3) : Colors.amber[100];
-    final Color? lockedAchievementCardColor = isDarkMode ? Theme.of(context).cardTheme.color : Colors.grey[200];
-
     return SingleChildScrollView(
       padding: const EdgeInsets.all(8.0),
       child: Column(
@@ -875,38 +716,39 @@ class _HabitHomePageState extends State<HabitHomePage> with TickerProviderStateM
               onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (context) =>
-                        ChartsPage(completedHabits: completedHabits),
+                    builder: (context) => ChartsPage(completedHabits: completedHabits),
                     settings: RouteSettings(arguments: habits),
                   ),
                 );
               },
               child: Card(
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-                  child: Row(
-                    children: [
-                      Image.asset(
-                        'assets/images/graph_icon.png',
+                elevation: 2,
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                child: Row(
+                  children: [
+                    Image.asset(
+                      'assets/images/graph_icon.png',
                         width: 60,
                         height: 60,
+                    ),
+                    const SizedBox(width: 12),
+                    const Text(
+                      'Check your Progress',
+                      style: TextStyle(
+                          fontSize: 20,
+                        fontWeight: FontWeight.w600,
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(child: Text(
-                        'Check your Progress',
-                        style: Theme.of(context).textTheme.titleLarge,
-                      )),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),
           ),
+          ),
           const SizedBox(height: 16),
           if (_isLoadingAchievements)
-            const Center(
-                child: Padding(
+            const Center(child: Padding(
               padding: EdgeInsets.all(8.0),
               child: CircularProgressIndicator(),
             ))
@@ -918,32 +760,28 @@ class _HabitHomePageState extends State<HabitHomePage> with TickerProviderStateM
                 children: [
                   Text(
                     'Achievements',
-                    style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: achievementsTitleColor),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: HexColor('#6c1448')),
                   ),
                   const SizedBox(height: 8),
                   SizedBox(
                     height: 120,
-                    child: ListView.builder(
+            child: ListView.builder(
                       scrollDirection: Axis.horizontal,
                       itemCount: _achievements.length,
                       itemBuilder: (context, index) {
                         final achievement = _achievements[index];
                         return Card(
-                          color: achievement.isUnlocked ? unlockedAchievementCardColor : lockedAchievementCardColor,
+                          elevation: 2,
+                          color: achievement.isUnlocked ? Colors.amber[100] : Colors.grey[200],
                           child: Container(
                             width: 100,
                             padding: const EdgeInsets.all(8.0),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                achievement.isUnlocked
-                                    ? Icon(Icons.emoji_events,
-                                        color: Colors.amber, size: 30)
-                                    : Icon(Icons.lock_outline,
-                                        color: achievementLockedIconColor, size: 30),
+                                achievement.isUnlocked 
+                                  ? Icon(Icons.emoji_events, color: Colors.amber, size: 30)
+                                  : Icon(Icons.lock_outline, color: Colors.grey[600], size: 30),
                                 const SizedBox(height: 4),
                                 Text(
                                   achievement.title,
@@ -951,9 +789,7 @@ class _HabitHomePageState extends State<HabitHomePage> with TickerProviderStateM
                                   style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w500,
-                                    color: achievement.isUnlocked
-                                        ? (isDarkMode ? Colors.white : Colors.black87)
-                                        : achievementLockedTextColor,
+                                    color: achievement.isUnlocked ? Colors.black87 : Colors.grey[700],
                                   ),
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
@@ -970,21 +806,17 @@ class _HabitHomePageState extends State<HabitHomePage> with TickerProviderStateM
             ),
           const SizedBox(height: 16),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4.0),
+            padding: const EdgeInsets.symmetric(horizontal: 4.0), 
             child: Text(
               'Your Habits',
-              style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: yourHabitsTitleColor),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: HexColor('#4a4a4a')),
             ),
           ),
           const SizedBox(height: 8),
           if (habits.isEmpty)
-            Center(
-                child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text("No habits added yet. Tap '+' to start!", style: Theme.of(context).textTheme.titleMedium),
+            const Center(child: Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Text("No habits added yet. Tap '+' to start!"),
             ))
           else
             ListView.builder(
@@ -1000,31 +832,26 @@ class _HabitHomePageState extends State<HabitHomePage> with TickerProviderStateM
     );
   }
 
-  Widget _buildRemindersTab(
-      List<Map<String, dynamic>> activeRemindersDisplayList) {
-    if (_isLoadingGlobalReminders) {
+  Widget _buildRemindersTab(List<Map<String, dynamic>> activeRemindersDisplayList) {
+    if (_isLoadingGlobalReminders)
       return const Center(child: CircularProgressIndicator());
-    }
-    if (activeRemindersDisplayList.isEmpty) {
-      return Center(
-          child: Text("No active reminders set.",
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontStyle: FontStyle.italic)));
-    }
-
+    if (activeRemindersDisplayList.isEmpty)
+      return const Center(child: Text("No active reminders set.", style: TextStyle(fontStyle: FontStyle.italic)));
+    
     return ListView.builder(
       padding: const EdgeInsets.all(8.0),
       itemCount: activeRemindersDisplayList.length,
       itemBuilder: (context, index) {
         final reminderItem = activeRemindersDisplayList[index];
         return Card(
+          elevation: 2,
+          margin: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 8.0),
           child: ListTile(
-            leading: Icon(Icons.notifications_active,
-                color: Theme.of(context).brightness == Brightness.dark ? Colors.amberAccent.shade100 : HexColor('#916d35')),
+            leading: Icon(Icons.notifications_active, color: HexColor('#916d35')),
             title: Text(reminderItem['habitName']!),
-            subtitle: Text(
-                '${reminderItem['reminderTime']} - ${reminderItem['reminderDays']}'),
+            subtitle: Text('${reminderItem['reminderTime']} - ${reminderItem['reminderDays']}'),
             onTap: () {
-              _editReminderFromMain(reminderItem['reminderId']!);
+              _editReminderFromMain(reminderItem['reminderId']!); 
             },
           ),
         );
@@ -1033,57 +860,59 @@ class _HabitHomePageState extends State<HabitHomePage> with TickerProviderStateM
   }
 
   Widget _buildHabitCard(Habit habit, int index) {
-    final isCompleted = habit.progress >= habit.goal;
-    final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Row(
-          children: [
-            Stack(
-              alignment: Alignment.center,
-              children: [
-                SizedBox(
-                  height: 60,
-                  width: 60,
-                  child: CircularProgressIndicator(
-                    value: habit.progress / habit.goal,
-                    strokeWidth: 6,
-                    backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
-                    valueColor:
-                        AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary.withOpacity(0.8)),
-                  ),
-                ),
-                Text(
-                  '${habit.progress}/${habit.goal}',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Text(
-                habit.name,
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-            ),
-            IconButton(
-              icon: const Icon(Icons.add),
-              color: Colors.green,
-              onPressed: isCompleted ? null : () => _incrementProgress(index),
-              tooltip: 'Increment Progress',
-            ),
-            IconButton(
-              icon: const Icon(Icons.delete),
-              color: Colors.redAccent,
-              onPressed: () => _deleteHabit(index),
-              tooltip: 'Delete Habit',
-            ),
-          ],
-        ),
-      ),
-    );
+      final isCompleted = habit.progress >= habit.goal;
+                    return Card(
+        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        elevation: 2,
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Row(
+                          children: [
+                            Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                SizedBox(
+                                  height: 60,
+                                  width: 60,
+                    child: CircularProgressIndicator(
+                      value: habit.progress / habit.goal,
+                                        strokeWidth: 6,
+                      backgroundColor: Colors.grey[300],
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.deepPurple),
+                                  ),
+                                ),
+                                Text(
+                                  '${habit.progress}/${habit.goal}',
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Text(
+                                habit.name,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.add),
+                color: Colors.green,
+                              onPressed: isCompleted ? null : () => _incrementProgress(index),
+                tooltip: 'Increment Progress',
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete),
+                color: Colors.redAccent,
+                              onPressed: () => _deleteHabit(index),
+                tooltip: 'Delete Habit',
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
   }
 }
 
@@ -1101,96 +930,140 @@ class _HabitAgendaItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double progressPercentage =
-        habit.goal > 0 ? habit.progress / habit.goal : 0.0;
-    final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final Color pendingStatusColor = isDarkMode ? Colors.orangeAccent.shade100 : Colors.orangeAccent;
-    final Color completedStatusColor = isDarkMode ? Colors.greenAccent.shade100 : Colors.green;
-    final Color statusTextColor = habit.isCompleted ? completedStatusColor : (isDarkMode ? Colors.orangeAccent.shade100 : Colors.orange.shade700);
-    final Color categoryIconColor = isDarkMode ? Colors.white54 : Colors.grey[600]!;
+    final double progressPercentage = habit.goal > 0 ? habit.progress / habit.goal : 0.0;
 
     return Card(
+      margin: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 8.0),
+      elevation: 3,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12.0),
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Container(
-              width: 10,
-              height: 90,
-              decoration: BoxDecoration(
-                color: category.color,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(12.0),
-                  bottomLeft: Radius.circular(12.0),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 12.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(habit.name, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 6),
-                    Row(children: [
-                      AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 300),
-                        transitionBuilder: (Widget child, Animation<double> animation) {
-                          return FadeTransition(opacity: animation, child: ScaleTransition(scale: animation, child: child));
-                        },
-                        child: Row(key: ValueKey<bool>(habit.isCompleted), children: [
-                          Icon(Icons.circle, size: 8, color: habit.isCompleted ? completedStatusColor : pendingStatusColor),
-                          const SizedBox(width: 4),
-                          Text(
-                            habit.isCompleted ? 'Completed!' : 'Pending',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: statusTextColor, fontWeight: habit.isCompleted ? FontWeight.bold : FontWeight.normal),
-                          ),
-                        ]),
+        child: Padding(
+          padding: const EdgeInsets.all(0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 10,
+                    height: 90,
+                    decoration: BoxDecoration(
+                      color: category.color,
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(12.0),
+                        bottomLeft: Radius.circular(12.0),
                       ),
-                    ]),
-                  ],
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 12.0, right: 12.0, bottom: 12.0),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.end, mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: category.color.withOpacity(isDarkMode ? 0.3 : 0.2),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(mainAxisSize: MainAxisSize.min, children: [
-                    Icon(category.icon, size: 14, color: category.color),
-                    const SizedBox(width: 4),
-                    Text(
-                      category.name,
-                      style: TextStyle(color: category.color, fontWeight: FontWeight.w500, fontSize: 12),
                     ),
-                  ]),
-                ),
-                const SizedBox(height: 25),
-                Text('${habit.progress}/${habit.goal}', style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold)),
-              ]),
-            ),
-          ]),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: LinearProgressIndicator(
-                value: progressPercentage,
-                minHeight: 6,
-                backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
-                valueColor: AlwaysStoppedAnimation<Color>(category.color),
-              ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  habit.name,
+                                  style: const TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              Icon(category.icon, size: 20, color: Colors.grey[600]),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          Row(
+                            children: [
+                              AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 300),
+                                transitionBuilder: (Widget child, Animation<double> animation) {
+                                  return FadeTransition(opacity: animation, child: ScaleTransition(scale: animation, child: child));
+              },
+                                child: Row(
+                                  key: ValueKey<bool>(habit.isCompleted),
+                                  children: [
+                                    Icon(Icons.circle, size: 8, color: habit.isCompleted ? Colors.green : Colors.orangeAccent),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      habit.isCompleted ? 'Completed!' : 'Pending',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: habit.isCompleted ? FontWeight.bold : FontWeight.normal,
+                                        color: habit.isCompleted ? Colors.green : Colors.grey[700],
             ),
           ),
-        ]),
+        ],
+      ),
+                              ),
+                              const SizedBox(width: 8),
+
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12.0, right: 12.0, bottom: 12.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: category.color.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            category.name,
+                            style: TextStyle(
+                              color: category.color,
+                              fontWeight: FontWeight.w500,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 25),
+                        Text(
+                          '${habit.progress}/${habit.goal}',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey[800],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: LinearProgressIndicator(
+                    value: progressPercentage,
+                    minHeight: 6,
+                    backgroundColor: Colors.grey[300],
+                    valueColor: AlwaysStoppedAnimation<Color>(category.color),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -1215,7 +1088,6 @@ class _AddHabitDialogState extends State<AddHabitDialog> {
   bool _isLoadingCategories = true;
 
   final CategoryService _categoryService = CategoryService();
-  final _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -1224,7 +1096,6 @@ class _AddHabitDialogState extends State<AddHabitDialog> {
   }
 
   Future<void> _fetchCategories() async {
-    if(mounted) setState(() => _isLoadingCategories = true);
     try {
       final categories = await _categoryService.getCategories();
       if (mounted) {
@@ -1238,8 +1109,12 @@ class _AddHabitDialogState extends State<AddHabitDialog> {
         });
       }
     } catch (e) {
-      if (mounted) setState(() => _isLoadingCategories = false);
-      print("Error fetching categories for dialog: $e");
+      if (mounted) {
+        setState(() {
+          _isLoadingCategories = false;
+        });
+        print("Error fetching categories: $e");
+      }
     }
   }
   
@@ -1254,75 +1129,52 @@ class _AddHabitDialogState extends State<AddHabitDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text('New Habit'),
-      content: Form(
-        key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TextFormField(
-              controller: _nameController,
-              decoration: InputDecoration(
-                labelText: 'Habit Name',
-                errorText: _nameError,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) return 'Habit name cannot be empty';
-                return null;
-              },
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: _nameController,
+            decoration: InputDecoration(
+              labelText: 'Habit Name',
+              errorText: _nameError,
             ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _goalController,
-              decoration: InputDecoration(
-                labelText: 'Times per Week',
-                errorText: _goalError,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              ),
-              keyboardType: TextInputType.number,
-              validator: (value) {
-                if (value == null || value.isEmpty) return 'Please enter a number';
-                final n = int.tryParse(value);
-                if (n == null) return 'Please enter a valid number';
-                if (n <= 0) return 'Goal must be greater than 0';
-                return null;
-              },
+          ),
+          TextField(
+            controller: _goalController,
+            decoration: InputDecoration(
+              labelText: 'Times per Week',
+              errorText: _goalError,
             ),
-            const SizedBox(height: 16),
-            Text('Category', style: Theme.of(context).textTheme.titleSmall),
-            const SizedBox(height: 4),
-            _isLoadingCategories
-                ? const Center(child: CircularProgressIndicator())
-                : _categories.isEmpty
-                    ? Text("Could not load categories.", style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.error))
-                    : DropdownButtonFormField<String>(
-                        decoration: InputDecoration(
-                          errorText: _categoryError,
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                        ),
-                        value: _selectedCategoryId,
-                        hint: const Text('Select Category'),
-                        isExpanded: true,
-                        items: _categories.map((HabitCategory category) {
-                          return DropdownMenuItem<String>(
-                            value: category.id,
-                            child: Text(category.name),
-                          );
-                        }).toList(),
-                        onChanged: (String? newValue) {
-                          setState(() {
-                            _selectedCategoryId = newValue;
-                            _categoryError = null;
-                          });
-                        },
-                        validator: (value) => value == null ? 'Please select a category' : null,
-                    ),
-          ],
-        ),
+            keyboardType: TextInputType.number,
+          ),
+          const SizedBox(height: 16),
+          _isLoadingCategories
+              ? const CircularProgressIndicator()
+              : _categories.isEmpty
+                  ? const Text("Could not load categories. Please try again or add categories in settings.")
+                  : DropdownButtonFormField<String>(
+                      decoration: InputDecoration(
+                        labelText: 'Category',
+                        errorText: _categoryError,
+                        border: OutlineInputBorder(),
+                      ),
+                      value: _selectedCategoryId,
+                      hint: const Text('Select Category'),
+                      isExpanded: true,
+                      items: _categories.map((HabitCategory category) {
+                        return DropdownMenuItem<String>(
+                          value: category.id,
+                          child: Text(category.name),
+                        );
+                      }).toList(),
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          _selectedCategoryId = newValue;
+                          _categoryError = null;
+                        });
+                      },
+          ),
+        ],
       ),
       actions: [
         TextButton(
@@ -1330,23 +1182,45 @@ class _AddHabitDialogState extends State<AddHabitDialog> {
           child: const Text('Cancel'),
         ),
         ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-          ),
           onPressed: () {
+            bool isValid = true;
             setState(() {
               _nameError = null;
               _goalError = null;
               _categoryError = null;
-            });
+              
+              if (_nameController.text.isEmpty) {
+                _nameError = 'Habit name cannot be empty';
+                isValid = false;
+              }
+              
+              int? goal = int.tryParse(_goalController.text);
+              if (_goalController.text.isEmpty) {
+                _goalError = 'Please enter a number';
+                isValid = false;
+              } else if (goal == null) {
+                _goalError = 'Please enter a valid number';
+                isValid = false;
+              } else if (goal <= 0) {
+                _goalError = 'Goal must be greater than 0';
+                isValid = false;
+              }
 
-            if (_formKey.currentState!.validate()) {
+              if (_selectedCategoryId == null && _categories.isNotEmpty) {
+                _categoryError = 'Please select a category';
+                isValid = false;
+              }
+            });
+            
+            if (isValid) {
               final name = _nameController.text;
-              final goal = int.parse(_goalController.text);
-              final categoryId = _selectedCategoryId!;
+              final goal = int.tryParse(_goalController.text) ?? 1;
+              final categoryId = _selectedCategoryId ?? _categories.firstWhere((c) => c.id == 'other', orElse: () => HabitCategory(id: 'other', name: 'Other', icon: Icons.error, color: Colors.grey)).id;
 
               Navigator.of(context).pop(Habit(
-                name: name, goal: goal, categoryId: categoryId,
+                name: name, 
+                goal: goal,
+                categoryId: categoryId,
               ));
             }
           },

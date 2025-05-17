@@ -29,19 +29,22 @@ class _RemindersPageState extends State<RemindersPage> {
   }
 
   Future<void> _loadReminders() async {
-    if(mounted) setState(() => isLoading = true);
+    setState(() {
+      isLoading = true;
+    });
+
     final prefs = await SharedPreferences.getInstance();
     final remindersJson = prefs.getStringList('reminders');
-    if (mounted) {
-      setState(() {
-        if (remindersJson != null) {
-          reminders = remindersJson
-              .map((json) => HabitReminder.fromJson(jsonDecode(json)))
-              .toList();
-        }
-        isLoading = false;
-      });
+
+    if (remindersJson != null) {
+      reminders = remindersJson
+          .map((json) => HabitReminder.fromJson(jsonDecode(json)))
+          .toList();
     }
+
+    setState(() {
+      isLoading = false;
+    });
   }
 
   Future<void> _saveReminders() async {
@@ -55,9 +58,9 @@ class _RemindersPageState extends State<RemindersPage> {
   void _addReminder() {
     if (widget.habits.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('You need to create habits first to add a reminder.'),
-          backgroundColor: Theme.of(context).colorScheme.error,
+        const SnackBar(
+          content: Text('You need to create habits first'),
+          backgroundColor: Colors.red,
         ),
       );
       return;
@@ -68,13 +71,11 @@ class _RemindersPageState extends State<RemindersPage> {
       builder: (context) => ReminderDialog(
         habits: widget.habits,
         onSave: (reminder) {
-          if(mounted) {
-            setState(() {
-              reminders.add(reminder);
-              _saveReminders();
-              _scheduleNotification(reminder);
-            });
-          }
+          setState(() {
+            reminders.add(reminder);
+            _saveReminders();
+            _scheduleNotification(reminder);
+          });
         },
       ),
     );
@@ -87,13 +88,11 @@ class _RemindersPageState extends State<RemindersPage> {
         habits: widget.habits,
         reminder: reminders[index],
         onSave: (updatedReminder) {
-          if(mounted) {
-            setState(() {
-              reminders[index] = updatedReminder;
-              _saveReminders();
-              _scheduleNotification(updatedReminder);
-            });
-          }
+          setState(() {
+            reminders[index] = updatedReminder;
+            _saveReminders();
+            _scheduleNotification(updatedReminder);
+          });
         },
       ),
     );
@@ -113,16 +112,14 @@ class _RemindersPageState extends State<RemindersPage> {
           TextButton(
             onPressed: () {
               final reminder = reminders[index];
-              if(mounted) {
-                setState(() {
-                  reminders.removeAt(index);
-                  _saveReminders();
-                  _cancelNotification(reminder);
-                });
-              }
+              setState(() {
+                reminders.removeAt(index);
+                _saveReminders();
+                _cancelNotification(reminder);
+              });
               Navigator.pop(context);
             },
-            child: Text('Delete', style: TextStyle(color: Theme.of(context).colorScheme.error)),
+            child: const Text('Delete'),
           ),
         ],
       ),
@@ -130,24 +127,23 @@ class _RemindersPageState extends State<RemindersPage> {
   }
 
   void _toggleReminder(int index) {
-    if(mounted) {
-      setState(() {
-        final reminder = reminders[index];
-        final updatedReminder = reminder.copyWith(
-          isEnabled: !reminder.isEnabled,
-        );
-        reminders[index] = updatedReminder;
-        _saveReminders();
-        
-        if (updatedReminder.isEnabled) {
-          _scheduleNotification(updatedReminder);
-        } else {
-          _cancelNotification(updatedReminder);
-        }
-      });
-    }
+    setState(() {
+      final reminder = reminders[index];
+      final updatedReminder = reminder.copyWith(
+        isEnabled: !reminder.isEnabled,
+      );
+      reminders[index] = updatedReminder;
+      _saveReminders();
+      
+      if (updatedReminder.isEnabled) {
+        _scheduleNotification(updatedReminder);
+      } else {
+        _cancelNotification(updatedReminder);
+      }
+    });
   }
 
+  // Use NotificationService to schedule reminders
   void _scheduleNotification(HabitReminder reminder) {
     final habitName = _getHabitName(reminder.habitId);
     NotificationService().scheduleReminder(reminder, habitName);
@@ -170,6 +166,7 @@ class _RemindersPageState extends State<RemindersPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Reminders'),
+        backgroundColor: Colors.red,
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -178,13 +175,16 @@ class _RemindersPageState extends State<RemindersPage> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(
+                      const Text(
                         'No reminders yet',
-                        style: Theme.of(context).textTheme.headlineSmall,
+                        style: TextStyle(fontSize: 18),
                       ),
                       const SizedBox(height: 16),
                       ElevatedButton(
                         onPressed: _addReminder,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                        ),
                         child: const Text('Add Reminder'),
                       ),
                     ],
@@ -194,7 +194,6 @@ class _RemindersPageState extends State<RemindersPage> {
                   itemCount: reminders.length,
                   itemBuilder: (context, index) {
                     final reminder = reminders[index];
-                    final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
                     return Card(
                       margin: const EdgeInsets.symmetric(
                         horizontal: 16.0,
@@ -203,9 +202,7 @@ class _RemindersPageState extends State<RemindersPage> {
                       child: ListTile(
                         leading: Icon(
                           Icons.notifications,
-                          color: reminder.isEnabled 
-                              ? Theme.of(context).colorScheme.primary
-                              : Theme.of(context).disabledColor,
+                          color: reminder.isEnabled ? Colors.red : Colors.grey,
                         ),
                         title: Text(_getHabitName(reminder.habitId)),
                         subtitle: Column(
@@ -221,7 +218,7 @@ class _RemindersPageState extends State<RemindersPage> {
                             Switch(
                               value: reminder.isEnabled,
                               onChanged: (_) => _toggleReminder(index),
-                              activeColor: Theme.of(context).colorScheme.primary,
+                              activeColor: Colors.red,
                             ),
                             IconButton(
                               icon: const Icon(Icons.edit),
@@ -239,6 +236,7 @@ class _RemindersPageState extends State<RemindersPage> {
                 ),
       floatingActionButton: FloatingActionButton(
         onPressed: _addReminder,
+        backgroundColor: Colors.red,
         child: const Icon(Icons.add),
       ),
     );
@@ -262,56 +260,75 @@ class ReminderDialog extends StatefulWidget {
 }
 
 class _ReminderDialogState extends State<ReminderDialog> {
-  String? _selectedHabitId;
-  TimeOfDay _selectedTime = TimeOfDay.now();
-  List<int> _selectedDays = [];
-  final TextEditingController _messageController = TextEditingController();
+  late String _selectedHabitId;
+  late TimeOfDay _selectedTime;
+  late List<int> _selectedDays;
+  late TextEditingController _messageController;
   bool _isEnabled = true;
-  final _formKey = GlobalKey<FormState>();
 
-  final List<String> _dayNames = [
-    'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'
-  ];
+  final List<String> _dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
   @override
   void initState() {
     super.initState();
-    if (widget.reminder != null) {
-      _selectedHabitId = widget.reminder!.habitId;
-      _selectedTime = widget.reminder!.time;
-      _selectedDays = List<int>.from(widget.reminder!.days);
-      _messageController.text = widget.reminder!.message;
-      _isEnabled = widget.reminder!.isEnabled;
-    } else if (widget.habits.isNotEmpty) {
-      _selectedHabitId = widget.habits.first.id;
-    }
-    if (widget.reminder == null && _messageController.text.isEmpty) {
-      _updateDefaultMessage();
-    }
+    _selectedHabitId = widget.reminder?.habitId ?? widget.habits.first.id;
+    _selectedTime = widget.reminder?.time ?? TimeOfDay.now();
+    _selectedDays = widget.reminder?.days ?? [1, 2, 3, 4, 5, 6, 7]; // Default to all days
+    _messageController = TextEditingController(
+      text: widget.reminder?.message ?? 'Time to complete your habit!',
+    );
+    _isEnabled = widget.reminder?.isEnabled ?? true;
   }
 
-  void _updateDefaultMessage() {
-    if (_selectedHabitId != null) {
-      final habitName = widget.habits
-          .firstWhere((h) => h.id == _selectedHabitId,
-              orElse: () => Habit(name: 'this habit', goal: 1))
-          .name;
-      _messageController.text = 'Time for your habit: $habitName!';
-    } else {
-      _messageController.text = 'Time to complete your habit!';
-    }
+  @override
+  void dispose() {
+    _messageController.dispose();
+    super.dispose();
   }
 
-  Future<void> _pickTime(BuildContext context) async {
-    final TimeOfDay? picked = await showTimePicker(
+  Future<void> _selectTime() async {
+    final TimeOfDay? pickedTime = await showTimePicker(
       context: context,
       initialTime: _selectedTime,
     );
-    if (picked != null && picked != _selectedTime) {
+    if (pickedTime != null && pickedTime != _selectedTime) {
       setState(() {
-        _selectedTime = picked;
+        _selectedTime = pickedTime;
       });
     }
+  }
+
+  void _toggleDay(int day) {
+    setState(() {
+      if (_selectedDays.contains(day)) {
+        _selectedDays.remove(day);
+      } else {
+        _selectedDays.add(day);
+      }
+    });
+  }
+
+  void _validateAndSave() {
+    if (_selectedDays.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select at least one day'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    final reminder = HabitReminder(
+      id: widget.reminder?.id ?? const Uuid().v4(),
+      habitId: _selectedHabitId,
+      time: _selectedTime,
+      days: _selectedDays,
+      isEnabled: _isEnabled,
+      message: _messageController.text.trim(),
+    );
+
+    widget.onSave(reminder);
   }
 
   @override
@@ -319,183 +336,99 @@ class _ReminderDialogState extends State<ReminderDialog> {
     return AlertDialog(
       title: Text(widget.reminder == null ? 'Add Reminder' : 'Edit Reminder'),
       content: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Habit', style: Theme.of(context).textTheme.titleMedium),
-              const SizedBox(height: 8),
-              DropdownButtonFormField<String>(
-                value: _selectedHabitId,
-                items: widget.habits.map((habit) {
-                  return DropdownMenuItem<String>(
-                    value: habit.id,
-                    child: Text(habit.name, style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
-                  );
-                }).toList(),
-                onChanged: widget.habits.isEmpty ? null : (value) {
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            DropdownButtonFormField<String>(
+              value: _selectedHabitId,
+              decoration: const InputDecoration(
+                labelText: 'Habit',
+              ),
+              items: widget.habits.map((habit) {
+                return DropdownMenuItem<String>(
+                  value: habit.id,
+                  child: Text(habit.name),
+                );
+              }).toList(),
+              onChanged: (value) {
+                if (value != null) {
                   setState(() {
                     _selectedHabitId = value;
-                     if (widget.reminder == null) { 
-                        _updateDefaultMessage();
-                     }
                   });
-                },
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Theme.of(context).colorScheme.outline),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                ),
-                isExpanded: true,
-                 validator: (value) => value == null ? 'Please select a habit' : null,
-              ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Time', style: Theme.of(context).textTheme.titleMedium),
-                  TextButton(
-                    onPressed: () => _pickTime(context),
-                    child: Text(
-                      _selectedTime.format(context),
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Theme.of(context).colorScheme.primary,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Text('Days', style: Theme.of(context).textTheme.titleMedium),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8.0,
-                runSpacing: 8.0,
-                children: List<Widget>.generate(7, (index) {
-                  final dayValue = index + 1; 
-                  final isSelected = _selectedDays.contains(dayValue);
-                  return ChoiceChip(
-                    label: Text(_dayNames[index]),
-                    selected: isSelected,
-                    onSelected: (bool selected) {
-                      setState(() {
-                        if (selected) {
-                          _selectedDays.add(dayValue);
-                          _selectedDays.sort();
-                        } else {
-                          _selectedDays.remove(dayValue);
-                        }
-                      });
-                    },
-                    selectedColor: Theme.of(context).colorScheme.primary,
-                    labelStyle: TextStyle(
-                      color: isSelected 
-                          ? Theme.of(context).colorScheme.onPrimary 
-                          : Theme.of(context).colorScheme.onSurface,
-                    ),
-                    backgroundColor: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
-                    checkmarkColor: isSelected ? Theme.of(context).colorScheme.onPrimary : null,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        side: BorderSide(
-                            color: isSelected ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.outline.withOpacity(0.5),
-                        ),
-                    ),
-                  );
-                }),
-              ),
-              ValueListenableBuilder<List<int>>(
-                valueListenable: ValueNotifier(_selectedDays),
-                builder: (context, days, child) {
-                  if (days.isEmpty && _formKey.currentState?.validate() == false) {
-                    // Currently, this block does nothing visible. If inline error display is needed,
-                    // it would return a Text widget here.
-                  }
-                  return const SizedBox.shrink(); 
                 }
-              ),
-              const SizedBox(height: 16),
-              Text('Reminder Message', style: Theme.of(context).textTheme.titleMedium),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: _messageController,
-                decoration: InputDecoration(
-                  hintText: 'e.g., Time for your morning run!',
-                  border: OutlineInputBorder(
-                     borderRadius: BorderRadius.circular(8),
-                     borderSide: BorderSide(color: Theme.of(context).colorScheme.outline),
+              },
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                const Text('Time:'),
+                const Spacer(),
+                TextButton(
+                  onPressed: _selectTime,
+                  child: Text(
+                    '${_selectedTime.hour.toString().padLeft(2, '0')}:${_selectedTime.minute.toString().padLeft(2, '0')}',
+                    style: const TextStyle(fontSize: 16),
                   ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 ),
-                maxLines: 2,
-                validator: (value) => value == null || value.isEmpty ? 'Message cannot be empty' : null,
+              ],
+            ),
+            const SizedBox(height: 16),
+            const Text('Days:'),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              children: List.generate(7, (index) {
+                final day = index + 1;
+                final isSelected = _selectedDays.contains(day);
+                return FilterChip(
+                  label: Text(_dayNames[index]),
+                  selected: isSelected,
+                  onSelected: (_) => _toggleDay(day),
+                  selectedColor: Colors.red[100],
+                  checkmarkColor: Colors.red,
+                );
+              }),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _messageController,
+              decoration: const InputDecoration(
+                labelText: 'Reminder Message',
               ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Enabled', style: Theme.of(context).textTheme.titleMedium),
-                  Switch(
-                    value: _isEnabled,
-                    onChanged: (value) {
-                      setState(() {
-                        _isEnabled = value;
-                      });
-                    },
-                    activeColor: Theme.of(context).colorScheme.primary,
-                  ),
-                ],
-              ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                const Text('Enabled:'),
+                const Spacer(),
+                Switch(
+                  value: _isEnabled,
+                  onChanged: (value) {
+                    setState(() {
+                      _isEnabled = value;
+                    });
+                  },
+                  activeColor: Colors.red,
+                ),
+              ],
+            ),
+          ],
         ),
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text('Cancel', style: TextStyle(color: Theme.of(context).colorScheme.secondary)),
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
         ),
         ElevatedButton(
-          onPressed: () {
-            bool daysValid = _selectedDays.isNotEmpty;
-            if (!daysValid && mounted) { 
-                setState(() {}); 
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Please select at least one day."), backgroundColor: Theme.of(context).colorScheme.error,));
-            }
-
-            if (_formKey.currentState!.validate() && daysValid) {
-              final reminder = HabitReminder(
-                id: widget.reminder?.id ?? const Uuid().v4(),
-                habitId: _selectedHabitId!,
-                time: _selectedTime,
-                days: _selectedDays,
-                message: _messageController.text,
-                isEnabled: _isEnabled,
-              );
-              widget.onSave(reminder);
-              Navigator.of(context).pop();
-            }
-          },
+          onPressed: _validateAndSave,
           style: ElevatedButton.styleFrom(
-            backgroundColor: Theme.of(context).colorScheme.primary,
-            foregroundColor: Theme.of(context).colorScheme.onPrimary,
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            textStyle: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold),
+            backgroundColor: Colors.red,
           ),
           child: const Text('Save'),
         ),
       ],
     );
-  }
-
-  @override
-  void dispose() {
-    _messageController.dispose();
-    super.dispose();
   }
 }
