@@ -25,6 +25,7 @@ class _HomeScreenState extends State<HomeScreen> {
             MaterialButton(
               onPressed: () async{
                 await FirebaseAuth.instance.signOut();
+                Navigator.of(context).pushReplacementNamed('toAuth');
               },
               color: Colors.green,
               child: Text('Log out', style: TextStyle(
