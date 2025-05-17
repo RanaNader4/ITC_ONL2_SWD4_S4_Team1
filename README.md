@@ -74,7 +74,7 @@ The project is set up for Android, but here are quick checks if you see build er
 
 ## Project Structure (lib/)
 
-*   `main.dart`: Entry point of the application, Firebase initialization, theme setup, and root widget.
+*   `main.dart`: Entry point of the application, Firebase initialization, theme setup, and root widget
 *   `auth.dart`: Handles authentication state and navigates to login or home
 *   `models/`: Contains data model classes (`Habit`, `Category`, `Achievement`, `Reminder`)
 *   `screens/`: Contains UI screens for different parts of the app (login, signup, home page, settings, reminders)
